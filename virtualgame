@@ -1,0 +1,98 @@
+import os
+import sys
+import time
+import math
+import random
+import numpy as np
+import pygame
+from pygame.locals import *
+
+# Define the game environment.
+
+# The game world is a 3D cube.
+
+world_size = 100
+
+# The player starts in the center of the world.
+
+player_position = (world_size / 2, world_size / 2, world_size / 2)
+
+# Define the game objects.
+
+# The player is a sphere.
+
+player_radius = 1
+
+# The enemies are cubes.
+
+enemy_size = 2
+
+# Define the game mechanics.
+
+# The player can move around the world using the arrow keys.
+
+def move_player(direction):
+    global player_position
+    if direction == UP:
+        player_position[1] += 1
+    elif direction == DOWN:
+        player_position[1] -= 1
+    elif direction == LEFT:
+        player_position[0] -= 1
+    elif direction == RIGHT:
+        player_position[0] += 1
+
+# The player can shoot enemies using the space bar.
+
+def shoot_enemy():
+    global player_position
+    # Create a new bullet.
+    bullet = pygame.math.Vector3(player_position)
+    # Move the bullet towards the nearest enemy.
+    while True:
+        # Find the nearest enemy.
+        nearest_enemy = None
+        for enemy in enemies:
+            if enemy.position.distance_to(bullet) < nearest_enemy.position.distance_to(bullet):
+                nearest_enemy = enemy
+        # If there is no nearest enemy, stop the bullet.
+        if nearest_enemy is None:
+            break
+        # Move the bullet towards the nearest enemy.
+        bullet += bullet.normalize() * 10
+        # If the bullet hits the enemy, destroy the enemy.
+        if bullet.distance_to(nearest_enemy.position) < enemy_size:
+            enemies.remove(nearest_enemy)
+            break
+
+# Define the game's user interface.
+
+# The menu screen is displayed when the game starts.
+
+def menu_screen():
+    global running
+    while running:
+        # Clear the screen.
+        pygame.display.set_caption("Math Game")
+        pygame.draw.rect(screen, WHITE, (0, 0, screen_width, screen_height))
+        # Display the title.
+        pygame.font.SysFont("Arial", 50).render("Math Game", True, BLACK, WHITE)
+        # Display the start button.
+        start_button = pygame.draw.rect(screen, GREEN, (screen_width / 2 - 100, screen_height / 2 - 50, 200, 100))
+        pygame.font.SysFont("Arial", 30).render("Start", True, BLACK, GREEN)
+        # Display the exit button.
+        exit_button = pygame.draw.rect(screen, RED, (screen_width / 2 - 100, screen_height / 2 + 50, 200, 100))
+        pygame.font.SysFont("Arial", 30).render("Exit", True, BLACK, RED)
+        # Check for user input.
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = False
+            elif event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+                elif event.key == K_SPACE:
+                    game_screen()
+            elif event.type == MOUSEBUTTONDOWN:
+                if start_button.collidepoint(pygame.mouse.get_pos()):
+                    game_screen()
+                elif exit_button.collidepoint(pygame.mouse.get_pos()):
